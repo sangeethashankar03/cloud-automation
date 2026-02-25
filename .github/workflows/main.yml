@@ -33,14 +33,13 @@ jobs:
 
       - name: Terraform Init & Apply
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: eu-west-1
-          PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: eu-west-1
         run: |
           cd terraform
           terraform init
-          terraform apply -auto-approve -var="public_key=${PUBLIC_KEY}"
+          terraform apply -auto-approve -var="public_key=${{ secrets.SSH_PUBLIC_KEY }}"
 
       - name: Add SSH private key
         run: |
