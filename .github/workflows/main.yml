@@ -1,10 +1,8 @@
-name: Cloud Automation
+name: Deploy HTML to EC2
 
 on:
   push:
-    branches:
-      - main
-  workflow_dispatch:
+    branches: [ main ]
 
 jobs:
   deploy:
@@ -14,13 +12,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up SSH
+      - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/cloud-user.pem
           chmod 600 ~/.ssh/cloud-user.pem
+          ssh-keyscan -H ${{ secrets.EC2_IP }} >> ~/.ssh/known_hosts
 
       - name: Deploy HTML to EC2
         run: |
-          rsync -avz -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/cloud-user.pem" \
-          app/index.html ubuntu@${{ secrets.EC2_IP }}:/var/www/html/index.html
+          rsync -avz -e "ssh -i ~/.ssh/cloud-user.pem" app/index.html ubuntu@${{ secrets.EC2_IP }}:/var/www/html/index.html
+
+      - name: Reload nginx
+        run: |
+          ssh -i ~/.ssh/cloud-user.pem ubuntu@${{ secrets.EC2_IP }} "sudo systemctl reload nginx"
