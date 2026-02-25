@@ -1,0 +1,62 @@
+name: Cloud Automation
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y unzip python3-pip sshpass
+          pip install --upgrade pip
+          pip install ansible boto3
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.6.3
+
+      - name: Terraform Init & Apply
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: eu-west-1
+          PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
+        run: |
+          cd terraform
+          terraform init
+          terraform apply -auto-approve -var="public_key=${PUBLIC_KEY}"
+
+      - name: Add SSH private key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/cloud-user.pem
+          chmod 600 ~/.ssh/cloud-user.pem
+
+      - name: Create Ansible inventory
+        run: |
+          echo "[webservers]" > ansible/inventory
+          IP=$(terraform -chdir=terraform output -raw instance_ip)
+          echo "$IP ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/cloud-user.pem" >> ansible/inventory
+          cat ansible/inventory
+
+      - name: Run Ansible Playbook
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+        run: |
+          ansible-playbook ansible/playbook.yml -i ansible/inventory
