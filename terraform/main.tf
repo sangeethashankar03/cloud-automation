@@ -2,59 +2,25 @@ provider "aws" {
   region = "eu-west-1"
 }
 
-# Create key pair for EC2
-resource "aws_key_pair" "deployer" {
-  key_name   = "cloud-user"
-  public_key = var.public_key
-
-  # Avoid errors if key already exists
-  lifecycle {
-    prevent_destroy = true
-  }
+# Use existing key pair (already created in AWS)
+data "aws_key_pair" "existing" {
+  key_name = "cloud-user"
 }
 
-# Security group allowing SSH and HTTP
-resource "aws_security_group" "allow_ssh_http" {
-  name        = "allow_ssh_http"
-  description = "Allow SSH and HTTP traffic"
-
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  # Avoid recreation if group already exists
-  lifecycle {
-    prevent_destroy = true
-  }
+# Use existing security group (already created in AWS)
+data "aws_security_group" "existing_sg" {
+  name = "allow_ssh_http"
 }
 
 # EC2 instance
 resource "aws_instance" "web" {
-  ami                         = "ami-03446a3af42c5e74e" # EU West 1 Ubuntu AMI
+  ami                         = "ami-03446a3af42c5e74e"
   instance_type               = "t3.micro"
-  key_name                    = aws_key_pair.deployer.key_name
-  vpc_security_group_ids      = [aws_security_group.allow_ssh_http.id]
+  key_name                    = data.aws_key_pair.existing.key_name
+  vpc_security_group_ids      = [data.aws_security_group.existing_sg.id]
   associate_public_ip_address = true
 
   tags = {
     Name = "automation-web"
   }
 }
-
