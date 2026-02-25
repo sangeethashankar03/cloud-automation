@@ -11,65 +11,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout code
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Python for Ansible
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'
-
-      # Install tools
-      - name: Install dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y unzip python3-pip sshpass
-          pip install --upgrade pip
-          pip install ansible boto3
-
-      # Configure AWS credentials (CORRECT WAY)
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-west-1
-
-      # Install Terraform
-      - name: Install Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.6.3
-
-      # Run Terraform
-      - name: Terraform Init & Apply
-        env:
-          TF_VAR_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
-        run: |
-          cd terraform
-          terraform init
-          terraform apply -auto-approve
-
-      # Add SSH key
-      - name: Add SSH private key
+      - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/cloud-user.pem
           chmod 600 ~/.ssh/cloud-user.pem
 
-      # Create inventory
-      - name: Create Ansible inventory
+      - name: Deploy HTML to EC2
         run: |
-          echo "[webservers]" > ansible/inventory
-          IP=$(terraform -chdir=terraform output -raw instance_ip)
-          echo "$IP ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/cloud-user.pem" >> ansible/inventory
-          cat ansible/inventory
-
-      # Run Ansible
-      - name: Run Ansible Playbook
-        env:
-          ANSIBLE_HOST_KEY_CHECKING: "False"
-        run: |
-          ansible-playbook ansible/playbook.yml -i ansible/inventory
+          rsync -avz -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/cloud-user.pem" \
+          app/index.html ubuntu@${{ secrets.EC2_IP }}:/var/www/html/index.html
