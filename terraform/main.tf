@@ -36,10 +36,3 @@ resource "aws_instance" "web" {
     prevent_destroy = true
   }
 }
-
-########################################
-# Output Public IP
-########################################
-output "instance_ip" {
-  value = aws_instance.web.public_ip
-}
