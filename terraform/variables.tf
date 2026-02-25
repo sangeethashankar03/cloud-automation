@@ -1,3 +1,4 @@
-variable "region" {
-  default = "eu-west-1"
+variable "public_key" {
+  type        = string
+  description = "SSH public key for EC2 access"
 }
