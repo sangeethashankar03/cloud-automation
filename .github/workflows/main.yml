@@ -11,14 +11,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout code
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Python for Ansible
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
 
+      # Install tools
       - name: Install dependencies
         run: |
           sudo apt update
@@ -26,27 +29,37 @@ jobs:
           pip install --upgrade pip
           pip install ansible boto3
 
+      # Configure AWS credentials (CORRECT WAY)
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1
+
+      # Install Terraform
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.6.3
 
+      # Run Terraform
       - name: Terraform Init & Apply
         env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        AWS_DEFAULT_REGION: eu-west-1
+          TF_VAR_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
         run: |
           cd terraform
           terraform init
-          terraform apply -auto-approve -var="public_key=${{ secrets.SSH_PUBLIC_KEY }}"
+          terraform apply -auto-approve
 
+      # Add SSH key
       - name: Add SSH private key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/cloud-user.pem
           chmod 600 ~/.ssh/cloud-user.pem
 
+      # Create inventory
       - name: Create Ansible inventory
         run: |
           echo "[webservers]" > ansible/inventory
@@ -54,6 +67,7 @@ jobs:
           echo "$IP ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/cloud-user.pem" >> ansible/inventory
           cat ansible/inventory
 
+      # Run Ansible
       - name: Run Ansible Playbook
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
