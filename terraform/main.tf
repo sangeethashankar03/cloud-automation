@@ -6,7 +6,7 @@ provider "aws" {
 # Use EXISTING Key Pair
 ########################################
 data "aws_key_pair" "existing_key" {
-  key_name = "cloud-user"
+  key_name = "aws-key"
 }
 
 ########################################
