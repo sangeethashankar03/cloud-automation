@@ -1,4 +1,4 @@
-name: Deploy HTML to EC2
+name: Automated EC2 Deployment 
 
 on:
   push:
@@ -15,14 +15,14 @@ jobs:
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/cloud-user.pem
-          chmod 600 ~/.ssh/cloud-user.pem
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/aws-key.pem
+          chmod 600 ~/.ssh/aws-key.pem
           ssh-keyscan -H ${{ secrets.EC2_IP }} >> ~/.ssh/known_hosts
 
-      - name: Deploy HTML to EC2
+      - name: Deploy 
         run: |
-          rsync -avz -e "ssh -i ~/.ssh/cloud-user.pem" app/index.html ubuntu@${{ secrets.EC2_IP }}:/var/www/html/index.html
+          rsync -avz -e "ssh -i ~/.ssh/aws-key.pem" app/index.html ubuntu@${{ secrets.EC2_IP }}:/var/www/html/index.html
 
       - name: Reload nginx
         run: |
-          ssh -i ~/.ssh/cloud-user.pem ubuntu@${{ secrets.EC2_IP }} "sudo systemctl reload nginx"
+          ssh -i ~/.ssh/aws-key.pem ubuntu@${{ secrets.EC2_IP }} "sudo systemctl reload nginx"
