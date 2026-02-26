@@ -2,23 +2,14 @@ provider "aws" {
   region = "eu-west-1"
 }
 
-########################################
-# Use EXISTING Key Pair
-########################################
 data "aws_key_pair" "existing_key" {
   key_name = "aws-key"
 }
 
-########################################
-# Use EXISTING Security Group
-########################################
 data "aws_security_group" "existing_sg" {
   name = "allow_ssh_http"
 }
 
-########################################
-# Create ONLY ONE EC2 Instance
-########################################
 resource "aws_instance" "web" {
   ami           = "ami-03446a3af42c5e74e"   # Ubuntu 24.04 eu-west-1
   instance_type = "t3.micro"
@@ -29,10 +20,10 @@ resource "aws_instance" "web" {
   associate_public_ip_address = true
 
   tags = {
-    Name = "automation-web"
+    Name = "web-automation"
   }
 
   lifecycle {
-    prevent_destroy = true
+  prevent_destroy = true
   }
 }
