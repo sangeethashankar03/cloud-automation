@@ -1,6 +1,3 @@
-# -------------------------------
-# Terraform files
-# -------------------------------
 .terraform/
 *.tfstate
 *.tfstate.*
@@ -14,21 +11,8 @@ override.tf.json
 terraform.rc
 *.tfvars
 *.tfvars.json
-
-# -------------------------------
-# SSH keys / sensitive files
-# -------------------------------
 *.pem
-
-# -------------------------------
-# OS / editor files
-# -------------------------------
-# Mac
 .DS_Store
-
-# Windows
 Thumbs.db
 Desktop.ini
-
-# Linux / editor
 *~
