@@ -36,8 +36,9 @@ jobs:
           sudo apt update
           sudo apt install -y ansible
 
+      # ✅ FIXED SYNTAX CHECK
       - name: Ansible Syntax Check
-        run: ansible-playbook -i ansible/playbook.yml 
+        run: ansible-playbook ansible/playbook.yml --syntax-check -i "localhost," -c local
 
       # Dockerfile check
       - name: Validate Dockerfile
