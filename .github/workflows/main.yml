@@ -14,7 +14,6 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # Terraform validation
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
@@ -30,17 +29,17 @@ jobs:
         working-directory: ./terraform
         run: terraform fmt -check
 
-      # Install Ansible
       - name: Install Ansible
         run: |
           sudo apt update
           sudo apt install -y ansible
 
-      # Ansible syntax
+      
       - name: Ansible Syntax Check
-        run: ansible-playbook ansible/playbook.yml --syntax-check -i "localhost," -c local
+        run: |
+          ansible-playbook ansible/playbook.yml --syntax-check -i "localhost," -c local
 
-      # Dockerfile check
+  
       - name: Validate Dockerfile
         run: |
           if [ -f app/Dockerfile ]; then
@@ -49,6 +48,7 @@ jobs:
             echo "Dockerfile missing"
             exit 1
           fi
+
 
   deploy:
     needs: build-and-validate
@@ -70,8 +70,13 @@ jobs:
           sudo apt update
           sudo apt install -y ansible
 
+
+      - name: Create Inventory
+        run: |
+          echo "[web]" > inventory
+          echo "${{ secrets.EC2_IP }} ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/aws-key.pem" >> inventory
+
+
       - name: Run Ansible Playbook
         run: |
-          ansible-playbook -i ansible/inventory ansible/playbook.yml \
-            --private-key ~/.ssh/aws-key.pem \
-            -u ubuntu
+          ansible-playbook -i inventory ansible/playbook.yml
