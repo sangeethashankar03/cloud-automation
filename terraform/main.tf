@@ -11,7 +11,7 @@ data "aws_security_group" "existing_sg" {
 }
 
 resource "aws_instance" "web" {
-  ami           = "ami-03446a3af42c5e74e"   
+  ami           = "ami-03446a3af42c5e74e" # Ubuntu 24.04 eu-west-1
   instance_type = "t3.micro"
 
   key_name               = data.aws_key_pair.existing_key.key_name
@@ -24,6 +24,6 @@ resource "aws_instance" "web" {
   }
 
   lifecycle {
-  prevent_destroy = true
+    prevent_destroy = true
   }
 }
