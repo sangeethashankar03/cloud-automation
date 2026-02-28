@@ -1,6 +1,6 @@
 ---
 - name: Deploy Docker App on EC2
-  hosts: webservers
+  hosts: web
   become: true
 
   tasks:
