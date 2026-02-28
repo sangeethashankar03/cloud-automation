@@ -2,7 +2,6 @@ provider "aws" {
   region = "eu-west-1"
 }
 
-# Get latest Ubuntu 22.04 LTS AMI dynamically
 data "aws_ami" "ubuntu" {
   most_recent = true
   owners      = ["099720109477"]
@@ -13,12 +12,12 @@ data "aws_ami" "ubuntu" {
   }
 }
 
-# Reference existing key pair
+
 data "aws_key_pair" "existing_key" {
   key_name = "aws-key"
 }
 
-# Create Security Group automatically
+
 resource "aws_security_group" "web_sg" {
   name        = "web-automation-sg"
   description = "Allow SSH and HTTP access"
@@ -28,7 +27,6 @@ resource "aws_security_group" "web_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  # You can restrict to your IP for better security
   }
 
   ingress {
@@ -54,7 +52,7 @@ resource "aws_security_group" "web_sg" {
 
 # EC2 Instance
 resource "aws_instance" "web" {
-  ami                    = data.aws_ami.ubuntu.id
+  ami                    = "ami-03446a3af42c5e74e"
   instance_type          = "t3.micro"
   key_name               = data.aws_key_pair.existing_key.key_name
   vpc_security_group_ids = [aws_security_group.web_sg.id]
