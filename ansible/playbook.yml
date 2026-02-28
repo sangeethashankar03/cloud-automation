@@ -1,7 +1,7 @@
 ---
-- name: Deploy Docker App on EC2
+- name: Configure EC2 and deploy Docker app
   hosts: web
-  become: true
+  become: yes
 
   tasks:
 
@@ -9,32 +9,12 @@
       apt:
         update_cache: yes
 
-    - name: Install required dependencies
-      apt:
-        name:
-          - apt-transport-https
-          - ca-certificates
-          - curl
-          - software-properties-common
-        state: present
-
-    - name: Add Docker GPG key
-      apt_key:
-        url: https://download.docker.com/linux/ubuntu/gpg
-        state: present
-
-    - name: Add Docker repository
-      apt_repository:
-        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
-        state: present
-
     - name: Install Docker
       apt:
-        name: docker-ce
+        name: docker.io
         state: present
-        update_cache: yes
 
-    - name: Ensure Docker is running
+    - name: Start and enable Docker
       service:
         name: docker
         state: started
@@ -46,26 +26,30 @@
         groups: docker
         append: yes
 
-    - name: Copy app folder to EC2
+    - name: Create app directory
+      file:
+        path: /home/ubuntu/app
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+
+    - name: Copy app files
       copy:
         src: ../app/
         dest: /home/ubuntu/app/
         owner: ubuntu
         group: ubuntu
-        mode: 0755
+        mode: '0755'
 
     - name: Build Docker image
-      community.docker.docker_image:
-        name: myapp
-        build:
-          path: /home/ubuntu/app
-        source: build
+      command: docker build -t myapp /home/ubuntu/app
+
+    - name: Stop existing container (if running)
+      shell: docker stop myapp_container || true
+
+    - name: Remove existing container (if exists)
+      shell: docker rm myapp_container || true
 
     - name: Run Docker container
-      community.docker.docker_container:
-        name: myapp_container
-        image: myapp
-        state: started
-        restart_policy: always
-        ports:
-          - "80:80"
+      command: docker run -d -p 80:80 --name myapp_container myapp
