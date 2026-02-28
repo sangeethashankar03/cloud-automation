@@ -40,7 +40,7 @@
 
     - name: Copy app files
       copy:
-        src: ../app/
+        src: app/
         dest: /home/ubuntu/app/
         owner: ubuntu
         group: ubuntu
