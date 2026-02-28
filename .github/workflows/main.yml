@@ -19,10 +19,11 @@ jobs:
           chmod 600 ~/.ssh/aws-key.pem
           ssh-keyscan -H ${{ secrets.EC2_IP }} >> ~/.ssh/known_hosts
 
-      - name: Deploy 
+      - name: Install Ansible
         run: |
-          rsync -avz -e "ssh -i ~/.ssh/aws-key.pem" app/index.html ubuntu@${{ secrets.EC2_IP }}:/var/www/html/index.html
+          sudo apt update
+          sudo apt install -y ansible
 
-      - name: Reload nginx
+      - name: Run Ansible Playbook
         run: |
-          ssh -i ~/.ssh/aws-key.pem ubuntu@${{ secrets.EC2_IP }} "sudo systemctl reload nginx"
+          ansible-playbook -i ansible/inventory ansible/playbook.yml
