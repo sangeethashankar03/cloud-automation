@@ -49,10 +49,10 @@
     - name: Build Docker image
       command: docker build -t myapp /home/ubuntu/app
 
-    - name: Stop existing container (if running)
+    - name: Stop existing container
       shell: docker stop myapp_container || true
 
-    - name: Remove existing container (if exists)
+    - name: Remove existing container
       shell: docker rm myapp_container || true
 
     - name: Run Docker container
