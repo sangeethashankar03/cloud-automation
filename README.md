@@ -67,10 +67,12 @@ Before running the project manually, ensure the following:
 Step-by-Step Execution 
 
   1. Clone Repository
+
      git clone <your-repository-url>
      cd cloud-automation
 
-  2. Provision Infrastructure (Terraform)
+  3. Provision Infrastructure (Terraform)
+  4. 
      cd terraform
      terraform init
      terraform apply
@@ -80,7 +82,8 @@ Step-by-Step Execution
 	   •	Security Groups (Port 22 for SSH, Port 80 for HTTP)
 	   •	Public IP address
 
-  3. Configure Server (Ansible)
+  5. Configure Server (Ansible)
+     
      cd ../ansible
      ansible-playbook -i inventory playbook.yml
 
@@ -90,7 +93,8 @@ Step-by-Step Execution
 	   •	Configures the environment
 	   •	Deploys the containerised application
 
-  4. Access the Application
+  7. Access the Application
+     
      http://<EC2_PUBLIC_IP>
 
 CI/CD Deployment
