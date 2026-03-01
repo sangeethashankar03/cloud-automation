@@ -68,34 +68,34 @@ Step-by-Step Execution
 
   1. Clone Repository
 
-     git clone <your-repository-url>
+    git clone <your-repository-url>
      cd cloud-automation
 
   2. Provision Infrastructure (Terraform)
 
-     cd terraform
-     terraform init
-     terraform apply
+         cd terraform
+         terraform init
+         terraform apply
      
      This provisions:
 	   •	AWS EC2 instance
 	   •	Security Groups (Port 22 for SSH, Port 80 for HTTP)
 	   •	Public IP address
 
-   3. Configure Server (Ansible)
+   4. Configure Server (Ansible)
      
      cd ../ansible
      ansible-playbook -i inventory playbook.yml
 
-     This step:
-	   •	Connects to EC2 via SSH
-	   •	Installs Docker
-	   •	Configures the environment
-	   •	Deploys the containerised application
+   This step:
+   • Connects to EC2 via SSH
+   • Installs Docker
+   • Configures the environment
+   • Deploys the containerised application
 
   4. Access the Application
      
-     http://<EC2_PUBLIC_IP>
+         http://<EC2_PUBLIC_IP>
 
 CI/CD Deployment
 
@@ -103,8 +103,8 @@ The GitHub Actions workflow is triggered automatically whenever code is pushed t
 
 Security Configuration
   •	SSH access enabled on Port 22
-	•	HTTP access enabled on Port 80
-	•	Security groups defined using Terraform
+  •	HTTP access enabled on Port 80
+  • Security groups defined using Terraform
 
 Challenges Faced
 
